@@ -62,7 +62,7 @@ The background is the actual night sky, not random dots.
 - `style.css` — themes (CSS variables at the top) and all styling
 - `history.js` — world events, eras and birthplace → region matching
 - `sky.js` — star catalogue, constellations, comets and the night-sky renderer
-- `paper-tree.js` — the old handwritten family tree, transcribed. It merges once into a saved tree (names are matched under the same parent, nothing is deleted); run it again from ⋯ → **📜 Merge old paper tree**. The tree before the merge is kept in localStorage under `roots.family.v1.before-paper-1`.
+- `paper-tree.js` — the old handwritten family tree, transcribed. It merges once into a saved tree (names are matched under the same parent, nothing is deleted); run it again from ⋯ → **📜 Merge old paper tree**. The tree before the merge is kept in localStorage under `roots.family.v1.before-paper-<n>`.
 - `app.js` — data, layouts, drawing, time machine, relationship finder, background animation
 
 ## Ideas to continue

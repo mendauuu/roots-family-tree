@@ -1624,7 +1624,8 @@ const nameKey = s => String(s || '').toLowerCase().replace(/\(\?\)|[?⊗]/g, '')
 
 function paperNote(n) {
   return [
-    `From the old paper tree${n.c ? ` (written ${n.c.replace(/\?$/, '')})` : ''}.`,
+    n.added ? 'Added by the family (not on the old paper tree).'
+      : `From the old paper tree${n.c ? ` (written ${n.c.replace(/\?$/, '')})` : ''}.`,
     /\(\?\)/.test(n.n) && '(?) Uncertain reading of the handwriting — check later.',
     n.x && '⊗ on the paper — probably died or had no descendants (not confirmed).',
     n.note
@@ -1643,11 +1644,18 @@ function mergeTree(src) {
 
   const walk = (n, parentId) => {
     const pool = parentId ? childrenOf(parentId) : all().filter(p => before.has(p.id));
-    const hits = pool.filter(p => same(p, n, !!parentId));
+    let hits = pool.filter(p => same(p, n, !!parentId));
+    // an earlier reading of the same person (n.was): found by the old name, updated in place
+    const old = n.was && { ...n, ...n.was, k: null };
+    if (!hits.length && old?.n) hits = pool.filter(p => same(p, old, !!parentId));
     let p = hits.length === 1 ? hits[0] : null;
     if (p) {
       sum.matched += before.has(p.id) ? 1 : 0;
       if (n.est && !p.birth && !p.estBirth) p.estBirth = n.est;   // fills a blank, overwrites nothing
+      if (old) {
+        if (old.n && nameKey(p.name) === nameKey(old.n)) p.name = n.n;
+        if (p.bio === paperNote(old)) p.bio = paperNote(n);       // only an untouched paper note
+      }
     } else {
       const id = uid();
       p = state.people[id] = {
@@ -1660,11 +1668,6 @@ function mergeTree(src) {
     (n.k || []).forEach(c => walk(c, p.id));
   };
   src.roots.forEach(n => walk(n, null));
-
-  // someone the paper doesn't show yet: leave a note, don't attach
-  const look = src.lookFor;
-  if (look) all().filter(p => before.has(p.id) && look.names.some(k => nameKey(p.name).split(' ')[0] === nameKey(k)))
-    .forEach(p => { if (!p.bio.includes(look.note)) p.bio = (p.bio ? p.bio + '\n\n' : '') + look.note; });
 
   (state.merged ||= []).includes(src.id) || state.merged.push(src.id);
   save();

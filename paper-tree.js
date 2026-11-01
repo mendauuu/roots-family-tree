@@ -8,16 +8,14 @@
    c  the original Cyrillic, where it was given
    x  ⊗ on the paper (probably died / no descendants — a note, not a fact)
    est  a rough birth year, only to place someone on the river
+   added  not on the paper — added by the family
+   was  an earlier reading { n, c, note }: matched and updated in place
    k  children
    ========================================================= */
 
 const PAPER_TREE = {
-  id: 'paper-1',
+  id: 'paper-2',            // bump to merge changes again (paper-2: Toshbura → Toshqul + his line)
   homeland: 'Uzbekistan',   // the paper is in Uzbek; set once if the tree has no homeland
-  lookFor: {
-    names: ['Toshqul', 'Тошқул'],
-    note: 'Not found on the old paper tree. Possible matches to check: Toshbura (?) (Тошбура), son of Jo\'ra in the Qobil branch, or Toshbuva (?) (Тошбува), son of Do\'smamat.'
-  },
   roots: [
     { n: 'Boyqushayboy', c: 'Бойқушайбой', est: 1650,
       note: 'Birth year unknown — about 1650 is only a guess to place the tree on the river (about nine generations before the early 1900s).',
@@ -37,7 +35,7 @@ const PAPER_TREE = {
                       ] },
                       { n: "Do'smamat", c: 'Дўсмамат', k: [
                         { n: 'Lapa (?)' }, { n: 'Ergash' },
-                        { n: 'Toshbuva (?)', c: 'Тошбува?', note: 'Possible match for Toshqul (Тошқул) — to check.' }
+                        { n: 'Toshbuva (?)', c: 'Тошбува?', was: { note: 'Possible match for Toshqul (Тошқул) — to check.' } }
                       ] },
                       { n: 'Qurbonqul', c: 'Қурбонқул', k: [
                         { n: 'Nurali' }, { n: 'Sherali' }, { n: 'Shermon' }, { n: 'Sherboy' }
@@ -54,7 +52,17 @@ const PAPER_TREE = {
                       { n: 'Aliboy', c: 'Алибой', k: [
                         { n: 'Xudoyberdi', c: 'Худойберди', k: [{ n: 'Norboy' }, { n: 'Asqar' }] },
                         { n: "Jo'ra", c: 'Жўра', k: [
-                          { n: 'Toshbura (?)', c: 'Тошбура', note: 'Possible match for Toshqul (Тошқул) — to check.' }
+                          { n: 'Toshqul',
+                            note: 'On the paper this name was read as Toshbura (?) (Тошбура); the family confirms he is Toshqul (Тошқул).',
+                            was: { n: 'Toshbura (?)', c: 'Тошбура', note: 'Possible match for Toshqul (Тошқул) — to check.' },
+                            k: [
+                              { n: 'Saidrasul', added: true, k: [
+                                { n: 'Baxtiyor', added: true },
+                                { n: 'Ixtiyor', added: true },
+                                { n: 'Ilxom', added: true, k: [{ n: 'Abdulatif', added: true }] }
+                              ] },
+                              { n: 'Abdurasul', added: true }
+                            ] }
                         ] }
                       ] }
                     ] },
