@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cosmos">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roots — Family Constellation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Animated background: stars / fireflies / paper dust depending on theme -->
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <!-- History backdrop: a soft colour for the era the time machine is in -->
+  <div class="epoch" id="epoch" aria-hidden="true">
+    <div class="epoch-tint" id="epTint"></div>
+  </div>
+
+  <!-- ============ TOP BAR ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">✦</span>
+      <div>
+        <h1>Roots</h1>
+        <p id="subtitle">My Family</p>
+      </div>
+    </div>
+
+    <nav class="modes" id="modes" aria-label="View">
+      <button data-mode="river" title="River of Time (1)">〰 <span class="hide-sm">River</span></button>
+      <button data-mode="orbit" title="Orbit — anyone at the centre (2)">◎ <span class="hide-sm">Orbit</span></button>
+      <button data-mode="tree" title="Classic tree (3)">⌥ <span class="hide-sm">Tree</span></button>
+    </nav>
+
+    <div class="search">
+      <input id="search" type="search" placeholder="Find someone…  ( / )" autocomplete="off">
+      <ul id="searchResults" hidden></ul>
+    </div>
+
+    <div class="actions">
+      <button id="btnAdd" class="btn primary" title="Add person (N)">+ <span class="hide-sm">Person</span></button>
+      <button id="btnRelate" class="btn" title="Find how two people are related">🔗 <span class="hide-sm">How are we related?</span></button>
+      <select id="themeSelect" class="btn" title="Theme">
+        <option value="cosmos">🌌 Cosmos</option>
+        <option value="forest">🌲 Forest</option>
+        <option value="parchment">📜 Parchment</option>
+      </select>
+      <div class="menu">
+        <button class="btn icon" id="btnMenu" aria-haspopup="true" title="More">⋯</button>
+        <div class="menu-list" id="menuList" hidden>
+          <button data-menu="rename">✏️ Rename tree</button>
+          <button data-menu="homeland">🌍 Family homeland…</button>
+          <button data-menu="export">💾 Export backup (.json)</button>
+          <button data-menu="import">📂 Import backup</button>
+          <button data-menu="paper">📜 Merge old paper tree</button>
+          <button data-menu="demo">✨ Load demo family</button>
+          <hr>
+          <button data-menu="clear" class="danger">🗑 Clear everything</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ TREE STAGE ============ -->
+  <main id="stage">
+    <svg id="tree" role="img" aria-label="Family tree">
+      <defs>
+        <clipPath id="avatarClip" clipPathUnits="objectBoundingBox">
+          <circle cx=".5" cy=".5" r=".5"/>
+        </clipPath>
+        <!-- river ribbons: "rib" = still flowing, "fade" = a life that has ended -->
+        <linearGradient id="rib-m"><stop offset="0" class="st-m" stop-opacity=".2"/><stop offset="1" class="st-m" stop-opacity=".95"/></linearGradient>
+        <linearGradient id="rib-f"><stop offset="0" class="st-f" stop-opacity=".2"/><stop offset="1" class="st-f" stop-opacity=".95"/></linearGradient>
+        <linearGradient id="rib-o"><stop offset="0" class="st-o" stop-opacity=".2"/><stop offset="1" class="st-o" stop-opacity=".95"/></linearGradient>
+        <linearGradient id="fade-m"><stop offset="0" class="st-m" stop-opacity=".2"/><stop offset=".6" class="st-m" stop-opacity=".8"/><stop offset="1" class="st-m" stop-opacity="0"/></linearGradient>
+        <linearGradient id="fade-f"><stop offset="0" class="st-f" stop-opacity=".2"/><stop offset=".6" class="st-f" stop-opacity=".8"/><stop offset="1" class="st-f" stop-opacity="0"/></linearGradient>
+        <linearGradient id="fade-o"><stop offset="0" class="st-o" stop-opacity=".2"/><stop offset=".6" class="st-o" stop-opacity=".8"/><stop offset="1" class="st-o" stop-opacity="0"/></linearGradient>
+      </defs>
+      <g id="viewport">
+        <g id="back"></g>
+        <g id="links"></g>
+        <g id="nodes"></g>
+      </g>
+    </svg>
+
+    <div class="empty" id="empty" hidden>
+      <div class="empty-card">
+        <div class="empty-star">✦</div>
+        <h2>Every family starts with one star</h2>
+        <p>Add yourself first, then grow outward — parents, partners, children, siblings.</p>
+        <div class="empty-btns">
+          <button class="btn primary" id="btnStart">Add yourself</button>
+          <button class="btn ghost" id="btnDemo">Load the demo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="zoom">
+      <button class="icon-btn" id="zoomIn" title="Zoom in (+)">+</button>
+      <button class="icon-btn" id="zoomOut" title="Zoom out (−)">−</button>
+      <button class="icon-btn" id="zoomFit" title="Fit everyone (F)">⤢</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <!-- Time machine: scrub or play the family's history -->
+    <div class="timebar" id="timebar">
+      <button class="play" id="tPlay" title="Play the family story (Space)" aria-label="Play">▶</button>
+      <div class="t-track">
+        <div class="t-ticks" id="tTicks"></div>
+        <input type="range" id="tRange" min="1900" max="2026" step="1" aria-label="Year">
+      </div>
+      <div class="t-year"><b id="tYear">2026</b><small id="tInfo">today</small></div>
+      <button class="btn ghost t-hist on" id="tHist" title="Show the history your family witnessed (H)">🏛 <span class="hide-sm">History</span></button>
+      <button class="btn ghost t-now" id="tNow" title="Back to today">Today</button>
+    </div>
+    <div class="chronicle" id="chronicle" aria-live="polite"></div>
+    <div class="headline" id="headline" aria-live="polite"></div>
+  </main>
+
+  <!-- ============ SIDE PANEL (selected person) ============ -->
+  <aside class="panel" id="panel" aria-live="polite"></aside>
+
+  <!-- ============ ADD / EDIT PERSON ============ -->
+  <dialog id="personDialog" class="dialog">
+    <form id="personForm" novalidate>
+      <header class="dlg-head">
+        <h2 id="dlgTitle">Add a person</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </header>
+
+      <div class="photo-row">
+        <div class="photo-preview" id="photoPreview"><span>📷</span></div>
+        <div class="photo-btns">
+          <label class="btn">Upload photo<input type="file" id="photoInput" accept="image/*" hidden></label>
+          <button type="button" class="btn ghost" id="photoRemove">Remove</button>
+        </div>
+      </div>
+
+      <label class="field"><span>Full name</span>
+        <input name="fullName" maxlength="60" placeholder="e.g. Zuhra Karimova" autocomplete="off">
+      </label>
+
+      <fieldset class="field gender">
+        <legend>Gender</legend>
+        <label><input type="radio" name="gender" value="m"><span>Male</span></label>
+        <label><input type="radio" name="gender" value="f"><span>Female</span></label>
+        <label><input type="radio" name="gender" value="o" checked><span>Other</span></label>
+      </fieldset>
+
+      <div class="grid2">
+        <label class="field"><span>Born (year)</span>
+          <input name="birth" inputmode="numeric" maxlength="10" placeholder="1965">
+        </label>
+        <label class="field"><span>Died (year)</span>
+          <input name="death" inputmode="numeric" maxlength="10" placeholder="empty if living">
+        </label>
+      </div>
+
+      <label class="field"><span>Birthplace</span>
+        <input name="place" maxlength="60" placeholder="City, country">
+      </label>
+
+      <label class="field" id="otherParentRow" hidden><span>Other parent</span>
+        <select name="otherParent"></select>
+      </label>
+
+      <label class="field"><span>Story / notes</span>
+        <textarea name="bio" rows="3" maxlength="600" placeholder="A favourite memory, job, nickname…"></textarea>
+      </label>
+
+      <footer class="dlg-foot">
+        <button type="button" class="btn ghost" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ============ RELATIONSHIP FINDER ============ -->
+  <dialog id="relateDialog" class="dialog">
+    <div class="dlg-inner">
+      <header class="dlg-head">
+        <h2>How are we related?</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </header>
+      <div class="relate-row">
+        <select id="relA"></select>
+        <button type="button" class="icon-btn" id="relSwap" title="Swap">⇄</button>
+        <select id="relB"></select>
+      </div>
+      <div class="relate-result" id="relResult"></div>
+    </div>
+  </dialog>
+
+  <input type="file" id="importFile" accept="application/json,.json" hidden>
+  <div id="toast" role="status"></div>
+
+  <script src="history.js"></script>
+  <script src="sky.js"></script>
+  <script src="paper-tree.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
